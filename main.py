@@ -51,13 +51,14 @@ direction_type = "home-to-work"
 
 directions_info = [direction for direction in config['directions'] if direction['name'] == direction_type][0]
 
-place_from = [place for place in places if place['name'] == directions_info['from']][0]
+# place_from = [place for place in places if place['name'] == directions_info['from']][0]
+place_from = requests.get("https://0t64mkt9ug.execute-api.us-east-1.amazonaws.com/default/get_will_location").json()
 place_to = [place for place in places if place['name'] == directions_info['to']][0]
 
 
 f = furl.furl(config['urls']['directions'])
-f /= f"{place_from['latitude']},{place_from['longitude']};" + \
-        f"{place_to['latitude']},{place_to['longitude']}"
+f /= f"{place_from['longitude']},{place_from['latitude']};" + \
+        f"{place_to['longitude']},{place_to['latitude']}"
 
 f.args['alternatives'] = "false"
 f.args['continue_straight'] = "false"
@@ -65,6 +66,7 @@ f.args['geometries'] = "polyline"
 f.args['overview'] = "full"
 f.args['steps'] = "false"
 f.args['access_token'] = config['keys']['access_token']
+
 
 dir_resp = requests.get(f.url)
 best_route = dir_resp.json().get("routes")[0]
@@ -77,8 +79,8 @@ polyline = dir_resp.json().get("routes")[0].get("geometry")
 # Image Map
 f = furl.furl(config['urls']['static'])
 
-f /= f"pin-l-{place_from['icon']}({place_from['latitude']},{place_from['longitude']})," + \
-        f"pin-l-{place_to['icon']}({place_to['latitude']},{place_to['longitude']})," + \
+f /= f"pin-l-home({place_from['longitude']},{place_from['latitude']})," + \
+        f"pin-l-{place_to['icon']}({place_to['longitude']},{place_to['latitude']})," + \
         f"path({polyline})"
 f /= "auto"
 f /= "900x700@2x"
